@@ -28,14 +28,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install docker-compose -y
 
-      - name: Construir e iniciar contêineres
-        run: docker-compose -f docker-compose.yml up --build
+      - name: Construir e iniciar contêineres em segundo plano
+        run: docker-compose -f docker-compose.yml up --build -d
 
-      - name: Verificar logs do Docker
-        run: docker-compose -f docker-compose.yml logs
+      - name: Verificar se os contêineres estão rodando
+        run: docker ps
 
       - name: Executar SpotBugs
         run: ./mvnw spotbugs:check
+
 
       - name: Executar testes com Docker
         run: docker exec app ./mvnw test
