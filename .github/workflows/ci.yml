@@ -7,7 +7,7 @@ on:
             - 'feature/**'
 jobs:
     build:
-        runs-on: ubuntu-latast
+        runs-on: ubuntu-latest
 
         steps:
             - name: Checar o repositório
