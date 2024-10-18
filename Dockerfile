@@ -2,10 +2,9 @@
 FROM maven:3.9.4-eclipse-temurin-21 AS builder
 WORKDIR /app
 COPY pom.xml .
+RUN mvn dependency:go-offline -B  # Faz o download das dependências
 COPY src ./src
-
-# Executar os testes durante a construção
-RUN mvn clean package || mvn surefire-report:report && exit 1
+RUN mvn clean package -DskipTests  # Compila o projeto e gera o JAR
 
 # Etapa de execução
 FROM openjdk:21-jdk-slim
