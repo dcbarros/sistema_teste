@@ -1,0 +1,43 @@
+name: CI Pipeline with Docker
+
+on: 
+    push:
+        branches:
+            - main
+            - 'feature/**'
+jobs:
+    build:
+        runs-on: ubuntu-latast
+
+        steps:
+            - name: Checar o repositório
+              uses: actions/checkout@v4
+
+            - name: Configura a JDK
+              uses: actions/setup-java@v3
+              with:
+                distribution: 'temurin'
+                java-version: '21'
+            
+            - name: Instalar Docker Compose
+              run: |
+                sudo apt-get update
+                sudo apt-get install docker-compose -y
+            - name: Verifica status dos containes
+              run: docker ps
+            
+            - name: executa SpotBugs
+              run: ./mvnw spotbugs:check
+            
+            - name: Executar testes com Docker
+              run: |
+                docker exec $(docker ps -q -f "name=app") ./mvnw test
+            - name: Publicar resultados dos testes
+              if: always()
+              uses: actions/upload-artifact@v3
+              with:
+                name: resultados-de-testes
+                path: target/surefire-reports/
+
+            - name: Derruba container docker
+              run: docker-compose -f docker-compose.yml down
