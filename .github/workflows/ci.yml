@@ -1,46 +1,51 @@
 name: CI Pipeline with Docker
 
-on: 
-    push:
-        branches:
-            - main
-            - 'feature/**'
+on:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checar o repositório
-              uses: actions/checkout@v4
+    steps:
+      - name: Checar o repositório
+        uses: actions/checkout@v4
 
-            - name: Dar permissão de execução ao mvnw
-              run: chmod +x mvnw
-              
-            - name: Configura a JDK
-              uses: actions/setup-java@v3
-              with:
-                distribution: 'temurin'
-                java-version: '21'
-            
-            - name: Instalar Docker Compose
-              run: |
-                sudo apt-get update
-                sudo apt-get install docker-compose -y
-            - name: Verifica status dos containes
-              run: docker ps
-            
-            - name: executa SpotBugs
-              run: ./mvnw spotbugs:check
-            
-            - name: Executar testes com Docker
-              run: |
-                docker exec $(docker ps -q -f "name=app") ./mvnw test
-            - name: Publicar resultados dos testes
-              if: always()
-              uses: actions/upload-artifact@v3
-              with:
-                name: resultados-de-testes
-                path: target/surefire-reports/
+      - name: Dar permissão de execução ao mvnw
+        run: chmod +x mvnw
 
-            - name: Derruba container docker
-              run: docker-compose -f docker-compose.yml down
+      - name: Configurar JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Instalar Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get install docker-compose -y
+
+      - name: Construir e iniciar contêineres
+        run: docker-compose -f docker-compose.yml up --build
+
+      - name: Verificar logs do Docker
+        run: docker-compose -f docker-compose.yml logs
+
+      - name: Executar SpotBugs
+        run: ./mvnw spotbugs:check
+
+      - name: Executar testes com Docker
+        run: docker exec app ./mvnw test
+
+      - name: Publicar resultados dos testes
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: resultados-de-testes
+          path: target/surefire-reports/
+
+      - name: Derrubar contêiner Docker após os testes
+        run: docker-compose -f docker-compose.yml down
