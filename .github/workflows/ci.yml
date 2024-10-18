@@ -13,6 +13,9 @@ jobs:
             - name: Checar o repositório
               uses: actions/checkout@v4
 
+            - name: Dar permissão de execução ao mvnw
+              run: chmod +x mvnw
+              
             - name: Configura a JDK
               uses: actions/setup-java@v3
               with:
