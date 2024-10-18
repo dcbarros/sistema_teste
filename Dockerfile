@@ -5,7 +5,7 @@ COPY pom.xml .
 COPY src ./src
 
 # Executar os testes durante a construção
-RUN mvn clean package
+RUN mvn clean package || mvn surefire-report:report && exit 1
 
 # Etapa de execução
 FROM openjdk:21-jdk-slim
